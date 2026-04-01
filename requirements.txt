@@ -1,0 +1,3 @@
+numpy==2.2.0
+pidog
+torch==2.5.1
