@@ -75,4 +75,4 @@ class TrainingConfig:
     safety: SafetyLimits = SafetyLimits()
     seed: int = 7
     learning_rate: float = 1e-3
-    episodes: int = 200
+    episodes: int = 2000
