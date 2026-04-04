@@ -1,0 +1,22 @@
+{
+  "universe_usage_history": [
+    {
+      "universe": "Disney",
+      "assignment_id": "2026-04-04-ml-pidog-gate-tuning",
+      "agent_count": 4,
+      "timestamp": "2026-04-04T16:39:49Z"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "2026-04-04-ml-pidog-gate-tuning": {
+      "universe": "Disney",
+      "timestamp": "2026-04-04T16:39:49Z",
+      "agents": [
+        { "name": "Mickey", "role": "Lead" },
+        { "name": "Minnie", "role": "Data & Analytics" },
+        { "name": "Donald", "role": "ML/Backend Dev" },
+        { "name": "Goofy", "role": "Tester" }
+      ]
+    }
+  }
+}

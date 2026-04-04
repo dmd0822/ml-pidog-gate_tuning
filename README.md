@@ -18,11 +18,12 @@ This repository trains a small reinforcement-learning policy to adjust PiDog gai
 
 ## What is in the repo
 
-* [pidog_rl/train.py](pidog_rl/train.py): Training loop (REINFORCE / policy gradient), checkpointing, and plotting
+* [pidog_rl/train.py](pidog_rl/train.py): Training loop, algorithm factory, checkpointing, and plotting
+* [pidog_rl/algorithms/](pidog_rl/algorithms/): RL algorithm implementations (REINFORCE currently, extensible for PPO, A2C, etc.)
 * [pidog_rl/env.py](pidog_rl/env.py): Gym-style environment that applies action deltas to gait parameters, runs a rollout (sim or hardware), and computes rewards
 * [pidog_rl/policy.py](pidog_rl/policy.py): Policy network that outputs a Gaussian distribution over action deltas
 * [pidog_rl/pidog_hw.py](pidog_rl/pidog_hw.py): Hardware adapter around the SunFounder `pidog` API (optional)
-* [pidog_rl/config.py](pidog_rl/config.py): Training, safety limits, and hardware configuration
+* [pidog_rl/config.py](pidog_rl/config.py): Training, safety limits, hardware, and algorithm selection configuration
 * [output/](output/): Example checkpoints produced by training
 
 ## Setup
@@ -61,6 +62,19 @@ python -m pidog_rl.train
 ```
 
 Training writes checkpoints and a plot into `output/`.
+
+### Algorithm Selection
+
+The default algorithm is REINFORCE. To use a different algorithm, modify `TrainingConfig.algorithm` in [pidog_rl/config.py](pidog_rl/config.py):
+
+```python
+@dataclass(frozen=True)
+class TrainingConfig:
+    algorithm: str = "reinforce"  # Change this to select a different algorithm
+    # ... rest of config
+```
+
+For instructions on adding new algorithms (PPO, A2C, SAC, etc.), see [pidog_rl/algorithms/README.md](pidog_rl/algorithms/README.md).
 
 ## Run inference (trained policy)
 
@@ -127,7 +141,7 @@ Each training run writes into a separate subfolder under `output/` named `yy_mm_
 
 Inside each run folder:
 
-* `checkpoint_ep*.pt`: Periodic checkpoints (episode, model weights, optimizer state, and reward history)
+* `checkpoint_ep*.pt`: Periodic checkpoints (episode, model weights, algorithm state, and reward history)
 * `checkpoint_final.pt`: Final checkpoint
 * `training_results_yy_mm_dd_x.png`: Reward, distance, and instability curves
 

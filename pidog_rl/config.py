@@ -92,6 +92,7 @@ class SafetyLimits:
 class TrainingConfig:
     """Top-level configuration bundle."""
 
+    algorithm: str = "reinforce"
     action_scaling: ActionScaling = ActionScaling()
     reward_weights: RewardWeights = RewardWeights()
     episode: EpisodeConfig = EpisodeConfig()

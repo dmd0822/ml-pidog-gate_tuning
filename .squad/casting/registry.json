@@ -1,0 +1,32 @@
+{
+  "agents": {
+    "mickey": {
+      "persistent_name": "Mickey",
+      "universe": "Disney",
+      "created_at": "2026-04-04T16:39:49Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "minnie": {
+      "persistent_name": "Minnie",
+      "universe": "Disney",
+      "created_at": "2026-04-04T16:39:49Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "donald": {
+      "persistent_name": "Donald",
+      "universe": "Disney",
+      "created_at": "2026-04-04T16:39:49Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "goofy": {
+      "persistent_name": "Goofy",
+      "universe": "Disney",
+      "created_at": "2026-04-04T16:39:49Z",
+      "legacy_named": false,
+      "status": "active"
+    }
+  }
+}

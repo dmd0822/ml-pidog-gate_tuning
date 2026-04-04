@@ -12,10 +12,11 @@ import numpy as np
 import torch
 from torch import nn
 
+from .algorithms import Algorithm, ReinforceAlgorithm
 from .config import TrainingConfig
 from .env import PiDogGaitEnv
 from .policy import PolicyNetwork
-from .utils import compute_returns, set_seed
+from .utils import set_seed
 
 DEFAULT_OUTPUT_DIR = Path("output")
 
@@ -106,7 +107,7 @@ def run_episode(
 
 def save_checkpoint(
     policy: PolicyNetwork,
-    optimizer: torch.optim.Optimizer,
+    algorithm: Algorithm,
     episode: int,
     history: TrainingHistory,
     path: Path,
@@ -115,7 +116,7 @@ def save_checkpoint(
         {
             "episode": episode,
             "policy_state_dict": policy.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
+            "algorithm_state_dict": algorithm.state_dict(),
             "history": {
                 "rewards": history.rewards,
                 "distances": history.distances,
@@ -169,6 +170,35 @@ def _moving_avg(values: List[float], window: int) -> List[float]:
     return result.tolist()
 
 
+def _create_algorithm(
+    algorithm_name: str,
+    policy: PolicyNetwork,
+    learning_rate: float,
+    config: TrainingConfig,
+) -> Algorithm:
+    """Factory function to create an algorithm instance based on config.
+
+    Args:
+        algorithm_name: Name of the algorithm to instantiate
+        policy: Policy network to train
+        learning_rate: Learning rate for the optimizer
+        config: Training configuration
+
+    Returns:
+        Algorithm instance
+
+    Raises:
+        ValueError: If algorithm_name is not recognized
+    """
+    algorithm_name = algorithm_name.lower()
+    if algorithm_name == "reinforce":
+        return ReinforceAlgorithm(policy, learning_rate, config.episode)
+    else:
+        raise ValueError(
+            f"Unknown algorithm: {algorithm_name}. Supported: 'reinforce'"
+        )
+
+
 def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None:
     set_seed(config.seed)
     device = torch.device("cpu")
@@ -185,27 +215,15 @@ def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None
     )
 
     policy = PolicyNetwork(env.state_dim, env.action_dim).to(device)
-    optimizer = torch.optim.Adam(policy.parameters(), lr=config.learning_rate)
+    algorithm = _create_algorithm(config.algorithm, policy, config.learning_rate, config)
     history = TrainingHistory()
 
     checkpoint_interval = max(1, config.episodes // 5)
 
     for episode in range(1, config.episodes + 1):
         log_probs, rewards, stats = run_episode(env, policy, device)
-        returns = compute_returns(rewards, config.episode.gamma)
-        returns_tensor = torch.tensor(returns, dtype=torch.float32, device=device)
-
-        # Baseline: subtract mean return to reduce variance while keeping
-        # the gradient unbiased. This lets the policy distinguish actions
-        # that are better-than-average from those that are worse.
-        baseline = returns_tensor.mean()
-        advantages = returns_tensor - baseline
-
-        loss = -torch.stack(log_probs).mul(advantages).sum()
-
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        loss = algorithm.compute_loss(log_probs, rewards)
+        algorithm.update(loss)
 
         history.record(stats)
 
@@ -222,12 +240,12 @@ def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None
 
         if episode % checkpoint_interval == 0:
             ckpt_path = run_output_dir / f"checkpoint_ep{episode}.pt"
-            save_checkpoint(policy, optimizer, episode, history, ckpt_path)
+            save_checkpoint(policy, algorithm, episode, history, ckpt_path)
             print(f"saved checkpoint to {ckpt_path}")
 
     # Save final checkpoint and plot
     final_path = run_output_dir / "checkpoint_final.pt"
-    save_checkpoint(policy, optimizer, config.episodes, history, final_path)
+    save_checkpoint(policy, algorithm, config.episodes, history, final_path)
     print(f"saved final checkpoint to {final_path}")
     plot_results(history, run_output_dir)
 
