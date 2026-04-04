@@ -3,6 +3,8 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HOME_DIR="${HOME}"
+PROJECT_REPO_URL="https://github.com/dmd0822/ml-pidog-gate_tuning.git"
+PROJECT_DIR="${HOME_DIR}/ml-pidog-gate_tuning"
 
 clone_if_missing() {
   local repo_url="$1"
@@ -32,6 +34,12 @@ clone_if_missing "https://github.com/sunfounder/vilib.git" "${HOME_DIR}/vilib" "
 clone_if_missing "https://github.com/sunfounder/pidog.git" "${HOME_DIR}/pidog" "--depth=1"
 (cd "${HOME_DIR}/pidog" && sudo rm -rf pidog.egg-info build dist)
 python3 -m pip install "${HOME_DIR}/pidog" --no-build-isolation --no-deps --break-system-packages
+
+if [ ! -f "${REPO_DIR}/pyproject.toml" ]; then
+  echo "Project not found at ${REPO_DIR}. Cloning into ${PROJECT_DIR}"
+  clone_if_missing "${PROJECT_REPO_URL}" "${PROJECT_DIR}" ""
+  REPO_DIR="${PROJECT_DIR}"
+fi
 
 python3 -m pip install -U pip --break-system-packages
 python3 -m pip install "${REPO_DIR}" --break-system-packages
