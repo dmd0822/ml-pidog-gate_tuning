@@ -109,3 +109,39 @@
 **Recommendation:** Proceed to WI-2 in parallel; increase penalty weights as separate tuning experiment; do not gate on convergence. Investigate Run 3 config separately; baseline enhancement may be prerequisite for penalty effectiveness.
 
 **Decision Entry:** D5 merged to decisions.md; awaiting team input.
+
+### 2026-04-04: PPO Multi-Epoch Implementation Complete (Donald)
+
+**Context:** Donald completed proper PPO implementation with multi-epoch support, addressing previous simplified single-update version.
+
+**Implementation:**
+- Added `PPOConfig` dataclass (clip_epsilon=0.2, num_epochs=4, normalize_advantages=True)
+- Added `PolicyNetwork.log_prob()` method for recomputing action probabilities
+- Created `EpisodeData` structure to store states, actions, log_probs, rewards for multi-epoch updates
+- Modified training loop to support multi-epoch updates with tensor detachment for computational graph stability
+- Completed 2000-episode training run (output\26_04_04_9); final reward converged to ~-0.6 to -0.8
+
+**Key Files Modified:**
+- `pidog_rl/train.py`: EpisodeData structure and training loop changes
+- `pidog_rl/policy.py`: log_prob() method
+- `pidog_rl/algorithms/ppo.py`: Complete rewrite with multi-epoch support
+- `pidog_rl/config.py`: Added PPOConfig
+
+**Note:** Default algorithm remains "reinforce" per user requirement; PPO available for Phase 2 convergence testing.
+
+**Cross-Team Impact:** 
+- PPO now ready for advanced training experiments
+- Multi-epoch support enables better sample efficiency for Phase 2 and beyond
+- Decision entries D5 and D6 merged to decisions.md
+
+### 2026-04-04: README Phase References Removed
+
+**Context:** User requested removal of internal phase nomenclature (phase1/phase2) from README to keep user-facing docs clean.
+
+**Changes:**
+- Removed section headers: "## Phase 1 validation" → "## Validation"
+- Replaced "### Phase 2 Signal Interpretation" → "### Analysis Outputs"
+- Updated output file references: `phase2_reward_stability.png` → `reward_stability.png`, `phase2_convergence.png` → `convergence.png`, `phase2_instability_margin.png` → `instability_margin.png`
+- Kept script command names unchanged (`phase1_validation.py`, `phase2_validation.py`, `phase2_analysis.py`) because these are actual file names in the scripts/ directory
+
+**Rationale:** README is user-facing. Phase labels are internal team artifacts. Users should see what tools are available, not the dev roadmap.

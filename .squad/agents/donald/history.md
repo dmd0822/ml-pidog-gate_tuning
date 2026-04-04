@@ -9,6 +9,83 @@
 
 <!-- Append new learnings below. Each entry is something lasting about the project. -->
 
+### 2026-04-04: Corrected PPO Implementation with Multi-Epoch Updates
+
+**Context:** Previous PPO implementation was simplified to single update per episode, missing the core benefit of PPO (multi-epoch updates on same data). Fixed to implement proper PPO with state/action storage and recomputation of log probs.
+
+**Action:** 
+- Modified `run_episode()` to return `EpisodeData` containing states, actions, log_probs, rewards, and stats
+- Added `PolicyNetwork.log_prob()` method to compute log probability for given state-action pairs
+- Added `PPOConfig` dataclass with `clip_epsilon`, `num_epochs`, `normalize_advantages` hyperparameters
+- Rewrote `PPOAlgorithm` to store episode data and perform multi-epoch updates by recomputing loss from current policy
+- Default algorithm remains "reinforce" (not changed per user request)
+
+**Architecture:**
+- PPO now does true multi-epoch updates (default: 4 epochs per episode)
+- Each epoch recomputes log_probs from current policy and recalculates clipped loss
+- All stored tensors (states, actions, advantages, old_log_probs) are detached to avoid computational graph issues
+- Training loop passes states and actions via kwargs to `compute_loss()`
+- Gradient norms are averaged across epochs for logging
+
+**Key Files:**
+- `pidog_rl/train.py`: Changed `run_episode()` to return `EpisodeData`; passes states/actions to `compute_loss()`
+- `pidog_rl/policy.py`: Added `log_prob()` method for recomputing action probabilities
+- `pidog_rl/config.py`: Added `PPOConfig`; kept default algorithm as "reinforce"
+- `pidog_rl/algorithms/ppo.py`: Complete rewrite with multi-epoch support
+- `pidog_rl/algorithms/README.md`: Updated with PPO details and multi-epoch info
+- `README.md`: Updated algorithm selection docs with PPOConfig explanation
+
+**Training Results:**
+- Successfully completed 2000 episodes with corrected PPO
+- Outputs written to `output\26_04_04_9\`
+- Final reward: ~-0.6 to -0.8 (vs ~-5 initially)
+- Distance maxed at 16.265; instability ~48
+- Checkpoints saved at 400, 800, 1200, 1600, 2000, final
+- Phase 1 validation passed
+
+**Stability Notes:**
+- Initial multi-epoch attempt failed with "backward through graph twice" error
+- Fixed by detaching all stored episode data (states, actions, advantages, old_log_probs)
+- Each epoch after the first recomputes loss via `_compute_ppo_loss()` from fresh forward pass
+- Gradient clipping works correctly across all epochs
+
+### 2026-04-04: PPO Algorithm Implementation
+
+**Context:** Implemented Proximal Policy Optimization (PPO) as an alternative to REINFORCE to improve training stability and sample efficiency.
+
+**Action:** Created `pidog_rl/algorithms/ppo.py` following existing algorithm abstraction pattern. Registered in factory and updated config to use PPO as default.
+
+**Architecture:**
+- PPO uses clipped surrogate objective to prevent destructive policy updates
+- Importance sampling ratio with clipping bounds (epsilon=0.2)
+- Advantage normalization for stability
+- Single update per episode (simplified from multi-epoch for compatibility with existing training loop)
+- Compatible with existing checkpoint format and training infrastructure
+
+**Key Files:**
+- `pidog_rl/algorithms/ppo.py`: PPO implementation with clipped objective
+- `pidog_rl/algorithms/__init__.py`: Registered PPOAlgorithm
+- `pidog_rl/train.py`: Added PPO to algorithm factory
+- `pidog_rl/config.py`: Changed default algorithm to "ppo"
+- `pidog_rl/algorithms/README.md`: Updated available algorithms list
+- `README.md`: Updated docs to reflect PPO as default
+
+**Training Results:**
+- Successfully completed 2000 episodes with PPO
+- Outputs written to `output\26_04_04_5\`
+- Checkpoints saved at regular intervals (400, 800, 1200, 1600, 2000, final)
+- Training plot generated showing reward/distance/instability curves
+
+**Design Decision:**
+- Simplified PPO to single update per episode to work with existing training loop structure
+- Future enhancement: Store states/actions to enable true multi-epoch PPO updates
+- Maintains compatibility with existing infrastructure (no breaking changes)
+
+**Stability Notes:**
+- Initial implementation had backward() issues with multiple epochs on same graph
+- Resolved by detaching advantages and doing single update per episode
+- Gradient clipping remains available via EpisodeConfig.grad_clip_norm
+
 ### 2026-04-04: Housekeeping
 
 **Context:** Removed stale output folder from training run.

@@ -82,6 +82,70 @@ Created `scripts/phase2_validation.py` to validate reward shaping determinism an
 
 **Documentation:** README updated with Phase 2 validation command for pre-training checklist.
 
+### D5: PPO Algorithm Implementation (Donald, 2026-04-04)
+
+**Status:** Active
+
+Implemented Proximal Policy Optimization (PPO) as an alternative training algorithm to improve sample efficiency and stability over REINFORCE.
+
+**Context:** REINFORCE shows high variance and slow convergence (2000 episodes). PPO offers:
+- Clipped surrogate objective allows safer policy updates
+- Constraints on policy changes prevent destructive updates
+- Industry standard for continuous control tasks
+
+**Implementation:**
+- Created `pidog_rl/algorithms/ppo.py` following existing `Algorithm` interface
+- Clipped objective with epsilon=0.2
+- Advantage normalization to reduce variance
+- Gradient clipping for stability
+- Registered in algorithm factory alongside REINFORCE
+
+**Architecture Notes:**
+- Compatible with existing checkpoint format (no breaking changes)
+- Both algorithms available via `TrainingConfig.algorithm`
+- Initial implementation was simplified (single update per episode); replaced with full multi-epoch version
+
+**Validation:**
+- Successfully ran 2000-episode training runs
+- Checkpoints and plots generated correctly
+- No regression in training infrastructure
+
+### D6: PPO Multi-Epoch Implementation (Donald, 2026-04-04)
+
+**Status:** Active
+
+Implemented proper PPO with full multi-epoch support to unlock PPO's core advantage: reusing episode data across multiple update passes.
+
+**Context:** Previous PPO implementation was simplified to single update per episode, missing the key benefit of multi-epoch updates for sample efficiency. This was a workaround to avoid computational graph issues.
+
+**Decision:** 
+1. **Episode Data Storage:** Modified training loop to store states, actions, log_probs, and rewards in an `EpisodeData` structure
+2. **Log Prob Recomputation:** Added `PolicyNetwork.log_prob()` method to compute action probabilities for given state-action pairs
+3. **Multi-Epoch Updates:** PPO now performs 4 epochs (configurable) per episode, recomputing loss from current policy each time
+4. **Configuration:** Added `PPOConfig` dataclass with hyperparameters (clip_epsilon=0.2, num_epochs=4, normalize_advantages=True)
+5. **Default Algorithm:** Kept default as "reinforce" per user requirement; PPO available via config override
+
+**Implementation Details:**
+- All episode data (states, actions, advantages, old_log_probs) detached before storage to avoid computational graph issues
+- First epoch uses loss from `compute_loss()`; subsequent epochs recompute via `_compute_ppo_loss()`
+- Each epoch does fresh forward pass through policy network
+- Gradient norms averaged across epochs for logging
+
+**Key Files:**
+- `pidog_rl/train.py`: `EpisodeData` structure and modified training loop
+- `pidog_rl/policy.py`: Added `log_prob()` method
+- `pidog_rl/algorithms/ppo.py`: Complete rewrite with multi-epoch support
+- `pidog_rl/config.py`: Added `PPOConfig`
+
+**Rationale:** Multi-epoch updates are fundamental to PPO's design. The revised implementation unlocks PPO's full potential (sample efficiency) while maintaining training stability through tensor detachment.
+
+**Training Results:**
+- Successfully completed 2000 episodes with corrected PPO
+- Outputs written to `output\26_04_04_9\`
+- Final reward: ~-0.6 to -0.8 (vs ~-5 initially)
+- Distance maxed at 16.265; instability ~48
+- Phase 1 validation passed
+
 ## Governance
 
 - All meaningful changes require team consensus

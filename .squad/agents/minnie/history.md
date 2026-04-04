@@ -7,6 +7,18 @@
 
 ## Learnings
 
+### 2026-04-04: Report Organization & Markdown Conversion
+
+**Task:** Moved `comparison_report.txt` to `reports/comparison_report.md` for better organization and readability.
+
+**Actions:**
+- Created `reports/` folder at repo root
+- Converted text format to clean markdown tables and sections
+- Removed original .txt file
+- Organized content into: metrics table, success criteria, key findings, root cause analysis, recommendations, artifacts, and verdict
+
+**Outcome:** Report now discoverable in logical reports/ folder with improved formatting for review.
+
 ### 2026-04-04: Phase 2 Analysis Results — No Convergence Improvement
 
 **Context:** Completed analysis of Phase 2 training runs; findings show reward formulation insufficient to improve beyond Phase 1 baseline.
@@ -48,27 +60,26 @@
 
 **Next:** Run validation checklist per training run; monitor reward-instability correlation (expect r < -0.3) and clipping margin (expect < 5%); alert if trends diverge.
 
-### 2026-04-04: Phase 2 Training Results Analysis
+### 2026-04-04: PPO Multi-Epoch Implementation Complete (Donald)
 
-**Data Analyzed:**
-- ORI (Phase 1 baseline, 2000 eps)
-- 26_04_04_1, 26_04_04_2, 26_04_04_3 (Phase 2 runs, 2000 eps each)
+**Context:** Donald completed proper PPO implementation with multi-epoch support, addressing previous simplified single-update version.
 
-**Key Findings:**
-1. **No Convergence Improvement:** Phase 2 runs show reward mean of -4.83 vs ORI -4.78 (−1% regression)
-2. **Reproducibility Validated:** Runs 1-2 identical; all runs < 2% variance on core metrics
-3. **Signal Quality Degradation:** Run 3 shows correlation drop to -0.262 (vs target < -0.3)
-4. **Instability Plateau:** Mean ~31.2 across all runs (no reduction from reward shaping)
-5. **Success Criteria Failed:** Only 2 of 4 criteria met (reproducibility & no distance regression); reward and instability targets unmet
+**Implementation:**
+- Added `PPOConfig` dataclass (clip_epsilon=0.2, num_epochs=4, normalize_advantages=True)
+- Added `PolicyNetwork.log_prob()` method for recomputing action probabilities
+- Created `EpisodeData` structure to store states, actions, log_probs, rewards for multi-epoch updates
+- Modified training loop to support multi-epoch updates with tensor detachment for computational graph stability
+- Completed 2000-episode training run (output\26_04_04_9); final reward converged to ~-0.6 to -0.8
 
-**Interpretation:**
-- Training has hit local optimum with current reward formulation
-- Run 3 signal degradation suggests config sensitivity
-- Reward weights insufficient to drive instability reduction
-- Distance metric may be architecture-constrained (6.1m baseline)
+**Key Files Modified:**
+- `pidog_rl/train.py`: EpisodeData structure and training loop changes
+- `pidog_rl/policy.py`: log_prob() method
+- `pidog_rl/algorithms/ppo.py`: Complete rewrite with multi-epoch support
+- `pidog_rl/config.py`: Added PPOConfig
 
-**Recommendation:**
-- Investigate Run 3 config variance
-- Increase reward penalty weights (Phase 2 WI-1 review)
-- Proceed to WI-2 baseline enhancement for variance reduction
-- Document signal ceiling phenomenon for future phases
+**Note:** Default algorithm remains "reinforce" per user requirement; PPO available for Phase 2 convergence testing.
+
+**Cross-Team Impact:** 
+- PPO now ready for advanced training experiments
+- Multi-epoch support enables better sample efficiency for Phase 2 and beyond
+- Decision entries D5 and D6 merged to decisions.md
