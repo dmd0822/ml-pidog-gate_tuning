@@ -63,7 +63,7 @@ class HardwareConfig:
     stand_method: str = "do_action"
     stand_action: str | None = "stand"
     stand_speed: int = 65
-    run_method: str = "walk"
+    run_method: str = "wait_all_done"
     imu_method: str = "get_imu"
     distance_method: str = "get_distance"
     imu_keys: tuple[str, str, str] = ("roll", "pitch", "yaw")

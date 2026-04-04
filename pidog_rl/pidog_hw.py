@@ -83,7 +83,10 @@ class PidogHardware:
             ) from exc
 
         # Run for a short duration to collect a transition.
-        self._run(run_duration)
+        try:
+            self._run(run_duration)
+        except TypeError:
+            self._run()
 
         distance = float(self._read_distance())
         imu_raw = self._read_imu()
