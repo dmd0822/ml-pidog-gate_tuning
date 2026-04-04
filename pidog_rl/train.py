@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
+import re
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -16,6 +18,39 @@ from .policy import PolicyNetwork
 from .utils import compute_returns, set_seed
 
 DEFAULT_OUTPUT_DIR = Path("output")
+
+
+def _create_run_output_dir(base_output_dir: Path) -> Path:
+    """Create a unique output directory for the current run.
+
+    Directory name format is yy_mm_dd_x where x is the run index for that day.
+    """
+
+    base_output_dir.mkdir(parents=True, exist_ok=True)
+    date_prefix = datetime.now().strftime("%y_%m_%d")
+    pattern = re.compile(rf"^{re.escape(date_prefix)}_(\\d+)$")
+
+    max_index = 0
+    for entry in base_output_dir.iterdir():
+        if not entry.is_dir():
+            continue
+        match = pattern.match(entry.name)
+        if match is None:
+            continue
+        try:
+            max_index = max(max_index, int(match.group(1)))
+        except ValueError:
+            continue
+
+    for index in range(max_index + 1, max_index + 10_000):
+        run_dir = base_output_dir / f"{date_prefix}_{index}"
+        try:
+            run_dir.mkdir(parents=False, exist_ok=False)
+        except FileExistsError:
+            continue
+        return run_dir
+
+    raise RuntimeError("Could not allocate a unique run output directory")
 
 
 @dataclass
@@ -120,9 +155,10 @@ def plot_results(history: TrainingHistory, output_dir: Path) -> None:
     axes[2].legend()
 
     plt.tight_layout()
-    fig.savefig(output_dir / "training_results.png", dpi=150)
+    plot_name = f"training_results_{output_dir.name}.png"
+    fig.savefig(output_dir / plot_name, dpi=150)
     plt.close(fig)
-    print(f"saved plot to {output_dir / 'training_results.png'}")
+    print(f"saved plot to {output_dir / plot_name}")
 
 
 def _moving_avg(values: List[float], window: int) -> List[float]:
@@ -136,7 +172,8 @@ def _moving_avg(values: List[float], window: int) -> List[float]:
 def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None:
     set_seed(config.seed)
     device = torch.device("cpu")
-    output_dir.mkdir(parents=True, exist_ok=True)
+    run_output_dir = _create_run_output_dir(output_dir)
+    print(f"writing outputs to {run_output_dir}")
 
     env = PiDogGaitEnv(
         action_scaling=config.action_scaling,
@@ -184,15 +221,15 @@ def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None
         )
 
         if episode % checkpoint_interval == 0:
-            ckpt_path = output_dir / f"checkpoint_ep{episode}.pt"
+            ckpt_path = run_output_dir / f"checkpoint_ep{episode}.pt"
             save_checkpoint(policy, optimizer, episode, history, ckpt_path)
             print(f"saved checkpoint to {ckpt_path}")
 
     # Save final checkpoint and plot
-    final_path = output_dir / "checkpoint_final.pt"
+    final_path = run_output_dir / "checkpoint_final.pt"
     save_checkpoint(policy, optimizer, config.episodes, history, final_path)
     print(f"saved final checkpoint to {final_path}")
-    plot_results(history, output_dir)
+    plot_results(history, run_output_dir)
 
 
 def main() -> None:
