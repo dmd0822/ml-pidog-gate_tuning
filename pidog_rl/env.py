@@ -87,6 +87,8 @@ class PiDogGaitEnv:
             lateral_offset=0.0,
         )
         self._imu_smoothed = np.zeros(3, dtype=np.float32)
+        if self.hardware is not None:
+            self.hardware.ensure_standing()
         return self._get_state()
 
     def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, Dict[str, float]]:

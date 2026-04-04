@@ -43,6 +43,9 @@ class HardwareConfig:
     use_hardware: bool = False
     run_duration_sec: float = 0.5
     apply_gait_method: str = "set_gait"
+    stand_method: str = "do_action"
+    stand_action: str | None = "stand"
+    stand_speed: int = 65
     run_method: str = "walk"
     imu_method: str = "get_imu"
     distance_method: str = "get_distance"

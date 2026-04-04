@@ -45,7 +45,14 @@ If you want to install the project (for example on a Raspberry Pi), use pip from
 python3 -m pip install .
 ```
 
-For hardware support (the `pidog` library), install the optional extra:
+For hardware support (the `pidog` library), you must install `pidog` from SunFounder first (it is not on PyPI), then install the extra:
+
+```bash
+git clone --depth=1 https://github.com/sunfounder/pidog.git
+python3 -m pip install ./pidog --break-system-packages
+```
+
+Then install the extra:
 
 ```bash
 python3 -m pip install ".[hardware]"
@@ -89,7 +96,14 @@ python3 -m pip install -U pip
 python3 -m pip install .
 ```
 
-Hardware mode requires the `pidog` package and access to the PiDog hardware. If `pidog` is installed from a local path or vendor package, install it first, then run:
+Hardware mode requires the `pidog` package and access to the PiDog hardware. Install it from SunFounder first:
+
+```bash
+git clone --depth=1 https://github.com/sunfounder/pidog.git
+python3 -m pip install ./pidog --break-system-packages
+```
+
+Then enable the optional extra:
 
 ```bash
 python3 -m pip install ".[hardware]"
