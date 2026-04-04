@@ -5,10 +5,10 @@ author: dmd0822
 ms.date: 2026-04-04
 ms.topic: overview
 keywords:
-	- reinforcement learning
-	- pidog
-	- robotics
-	- pytorch
+  - reinforcement learning
+  - pidog
+  - robotics
+  - pytorch
 estimated_reading_time: 4
 ---
 
