@@ -19,7 +19,7 @@ This repository trains a small reinforcement-learning policy to adjust PiDog gai
 ## What is in the repo
 
 * [pidog_rl/train.py](pidog_rl/train.py): Training loop, algorithm factory, checkpointing, and plotting
-* [pidog_rl/algorithms/](pidog_rl/algorithms/): RL algorithm implementations (REINFORCE currently, extensible for PPO, A2C, etc.)
+* [pidog_rl/algorithms/](pidog_rl/algorithms/): RL algorithm implementations (PPO, REINFORCE)
 * [pidog_rl/env.py](pidog_rl/env.py): Gym-style environment that applies action deltas to gait parameters, runs a rollout (sim or hardware), and computes rewards
 * [pidog_rl/policy.py](pidog_rl/policy.py): Policy network that outputs a Gaussian distribution over action deltas
 * [pidog_rl/pidog_hw.py](pidog_rl/pidog_hw.py): Hardware adapter around the SunFounder `pidog` API (optional)
@@ -63,7 +63,7 @@ python -m pidog_rl.train
 
 Training writes checkpoints and a plot into `output/`.
 
-## Phase 1 validation (REINFORCE stability)
+## Validation
 
 Use the validation script to confirm stability safeguards before approving a training change:
 
@@ -71,16 +71,14 @@ Use the validation script to confirm stability safeguards before approving a tra
 python scripts\phase1_validation.py
 ```
 
-Additional checks for EMA baseline and gradient clipping (run after those features land):
+Additional checks for EMA baseline and gradient clipping:
 
 ```powershell
 python scripts\phase1_validation.py --check-ema-baseline
 python scripts\phase1_validation.py --check-grad-clip
 ```
 
-## Phase 2 validation (Reward shaping & stability)
-
-Use these tools to validate that reward signal quality is maintained and training is stable:
+To validate that reward signal quality is maintained and training is stable:
 
 ```powershell
 python scripts\phase2_validation.py --seed 42
@@ -98,7 +96,7 @@ For detailed instability margin analysis (detects if clipping threshold is too t
 python scripts\phase2_analysis.py --checkpoint output\26_04_04_1\checkpoint_final.pt --plot-instability-margin
 ```
 
-### Phase 2 Signal Interpretation
+### Analysis Outputs
 
 The analysis script produces:
 
@@ -113,16 +111,29 @@ Key metrics to watch:
 
 ### Algorithm Selection
 
-The default algorithm is REINFORCE. To use a different algorithm, modify `TrainingConfig.algorithm` in [pidog_rl/config.py](pidog_rl/config.py):
+The default algorithm is REINFORCE (Monte Carlo policy gradient). To use a different algorithm, modify `TrainingConfig.algorithm` in [pidog_rl/config.py](pidog_rl/config.py):
 
 ```python
 @dataclass(frozen=True)
 class TrainingConfig:
-    algorithm: str = "reinforce"  # Change this to select a different algorithm
+    algorithm: str = "reinforce"  # Options: "reinforce", "ppo"
     # ... rest of config
 ```
 
-For instructions on adding new algorithms (PPO, A2C, SAC, etc.), see [pidog_rl/algorithms/README.md](pidog_rl/algorithms/README.md).
+Available algorithms:
+- **REINFORCE**: Monte Carlo policy gradient with EMA baseline (default)
+- **PPO**: Proximal Policy Optimization with clipped objective and multi-epoch updates
+
+PPO hyperparameters can be configured via `PPOConfig`:
+```python
+@dataclass(frozen=True)
+class PPOConfig:
+    clip_epsilon: float = 0.2        # Clipping range for importance ratio
+    num_epochs: int = 4              # Number of optimization epochs per episode
+    normalize_advantages: bool = True # Whether to normalize advantages
+```
+
+For instructions on adding new algorithms (A2C, SAC, etc.), see [pidog_rl/algorithms/README.md](pidog_rl/algorithms/README.md).
 
 ## Run inference (trained policy)
 

@@ -4,11 +4,27 @@ This directory contains RL algorithm implementations for the PiDog gait tuning p
 
 ## Available Algorithms
 
-- **REINFORCE** (`reinforce.py`): Monte Carlo policy gradient with baseline
+- **REINFORCE** (`reinforce.py`): Monte Carlo policy gradient with EMA baseline
+- **PPO** (`ppo.py`): Proximal Policy Optimization with clipped surrogate objective and multi-epoch updates
+
+## Algorithm Details
+
+### REINFORCE
+- Simple Monte Carlo policy gradient
+- Uses EMA baseline for variance reduction
+- Single update per episode
+- Good baseline for comparison
+
+### PPO
+- Clipped surrogate objective to prevent destructive policy updates
+- Multi-epoch updates on each episode (default: 4 epochs)
+- Advantage normalization for stability
+- Importance sampling with policy ratio clipping (default epsilon: 0.2)
+- Better sample efficiency than REINFORCE
 
 ## Adding a New Algorithm
 
-To add a new RL algorithm (e.g., PPO, A2C, SAC):
+To add a new RL algorithm (e.g., A2C, SAC):
 
 1. **Create a new file** `pidog_rl/algorithms/your_algorithm.py`
 
@@ -70,7 +86,7 @@ class YourAlgorithm(Algorithm):
 ```python
 from .your_algorithm import YourAlgorithm
 
-__all__ = ["Algorithm", "ReinforceAlgorithm", "YourAlgorithm"]
+__all__ = ["Algorithm", "ReinforceAlgorithm", "PPOAlgorithm", "YourAlgorithm"]
 ```
 
 4. **Add to the factory** in `train.py`:
@@ -80,6 +96,8 @@ def _create_algorithm(...):
     algorithm_name = algorithm_name.lower()
     if algorithm_name == "reinforce":
         return ReinforceAlgorithm(policy, learning_rate, config.episode)
+    elif algorithm_name == "ppo":
+        return PPOAlgorithm(policy, learning_rate, config.episode, config.ppo)
     elif algorithm_name == "your_algorithm":
         return YourAlgorithm(policy, learning_rate, config.episode)
     else:
@@ -90,8 +108,8 @@ def _create_algorithm(...):
 
 ## Notes on Algorithm Interface
 
-- **`compute_loss`**: Takes log probs and rewards from episode rollout. Use `**kwargs` for algorithm-specific data (e.g., value estimates, next states).
-- **`update`**: Handles the optimization step. Can be called multiple times per episode for algorithms like PPO.
+- **`compute_loss`**: Takes log probs and rewards from episode rollout. Use `**kwargs` for algorithm-specific data (e.g., states, actions, value estimates).
+- **`update`**: Handles the optimization step. Can be called multiple times per episode or perform multiple internal epochs.
 - **`state_dict` / `load_state_dict`**: Must save/load all training state (optimizers, running averages, etc.) for reproducible checkpointing.
 
 ## Actor-Critic Algorithms

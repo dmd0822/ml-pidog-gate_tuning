@@ -47,6 +47,15 @@ class EpisodeConfig:
 
 
 @dataclass(frozen=True)
+class PPOConfig:
+    """PPO-specific hyperparameters."""
+
+    clip_epsilon: float = 0.2
+    num_epochs: int = 4
+    normalize_advantages: bool = True
+
+
+@dataclass(frozen=True)
 class ImuConfig:
     """IMU smoothing for real-world noise handling."""
 
@@ -112,6 +121,7 @@ class TrainingConfig:
     reward_weights: RewardWeights = RewardWeights()
     reward_shaping: RewardShapingConfig = RewardShapingConfig()
     episode: EpisodeConfig = EpisodeConfig()
+    ppo: PPOConfig = PPOConfig()
     imu: ImuConfig = ImuConfig()
     hardware: HardwareConfig = HardwareConfig()
     safety: SafetyLimits = SafetyLimits()

@@ -47,16 +47,43 @@ Use an abstract base class to define the algorithm interface, separating algorit
    ```python
    algorithm = _create_algorithm(config.algorithm, policy, config.lr, config)
    for episode in range(episodes):
-       log_probs, rewards, stats = run_episode(env, policy, device)
-       loss = algorithm.compute_loss(log_probs, rewards)
+       episode_data = run_episode(env, policy, device)
+       loss = algorithm.compute_loss(
+           episode_data.log_probs,
+           episode_data.rewards,
+           states=episode_data.states,
+           actions=episode_data.actions,
+       )
        algorithm.update(loss)
    ```
 
 ### Interface Design Considerations
 
-- **`compute_loss`**: Takes episode data and returns loss tensor. Use `**kwargs` for algorithm-specific data (values, next states, etc.)
-- **`update`**: Handles optimization. Can be called multiple times per episode (e.g., PPO mini-batches)
+- **`compute_loss`**: Takes episode data and returns loss tensor. Use `**kwargs` for algorithm-specific data (states, actions, values, next states, etc.)
+- **`update`**: Handles optimization. Can be called multiple times per episode (e.g., PPO mini-batches) or perform multiple internal epochs
 - **`state_dict` / `load_state_dict`**: Must save ALL training state (optimizers, baselines, normalizers) for reproducible checkpointing
+
+### Multi-Epoch Updates (PPO Pattern)
+
+For algorithms that update on the same data multiple times:
+1. Store episode data (states, actions, advantages) in `compute_loss()`
+2. Detach all stored tensors to avoid computational graph issues
+3. In `update()`, perform multiple epochs by recomputing loss from current policy:
+   ```python
+   def update(self, loss: Tensor) -> None:
+       # First epoch: use passed-in loss
+       self.optimizer.zero_grad()
+       loss.backward()
+       self.optimizer.step()
+       
+       # Subsequent epochs: recompute loss
+       for epoch in range(1, self.num_epochs):
+           loss = self._recompute_loss()  # Fresh forward pass
+           self.optimizer.zero_grad()
+           loss.backward()
+           self.optimizer.step()
+   ```
+4. Add `policy.log_prob(state, action)` method to recompute probabilities for given state-action pairs
 
 ### Extending for Actor-Critic
 

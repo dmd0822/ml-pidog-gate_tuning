@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from .algorithms import Algorithm, ReinforceAlgorithm
+from .algorithms import Algorithm, ReinforceAlgorithm, PPOAlgorithm
 from .config import TrainingConfig
 from .env import PiDogGaitEnv
 from .policy import PolicyNetwork
@@ -73,10 +73,21 @@ class TrainingHistory:
         self.instabilities.append(stats.instability_total)
 
 
+@dataclass
+class EpisodeData:
+    states: List[torch.Tensor]
+    actions: List[torch.Tensor]
+    log_probs: List[torch.Tensor]
+    rewards: List[float]
+    stats: EpisodeStats
+
+
 def run_episode(
     env: PiDogGaitEnv, policy: PolicyNetwork, device: torch.device
-) -> tuple[List[torch.Tensor], List[float], EpisodeStats]:
+) -> EpisodeData:
     state = env.reset()
+    states: List[torch.Tensor] = []
+    actions: List[torch.Tensor] = []
     log_probs: List[torch.Tensor] = []
     rewards: List[float] = []
     distance_total = 0.0
@@ -92,16 +103,25 @@ def run_episode(
         action = output.action.detach().cpu().numpy()
         next_state, reward, done, info = env.step(action)
 
+        states.append(state_tensor)
+        actions.append(output.action)
         log_probs.append(output.log_prob)
         rewards.append(reward)
         distance_total += info["distance"]
         instability_total += info["instability"]
         state = next_state
 
-    return log_probs, rewards, EpisodeStats(
+    stats = EpisodeStats(
         reward_total=float(np.sum(rewards)),
         distance_total=distance_total,
         instability_total=instability_total,
+    )
+    return EpisodeData(
+        states=states,
+        actions=actions,
+        log_probs=log_probs,
+        rewards=rewards,
+        stats=stats,
     )
 
 
@@ -193,9 +213,11 @@ def _create_algorithm(
     algorithm_name = algorithm_name.lower()
     if algorithm_name == "reinforce":
         return ReinforceAlgorithm(policy, learning_rate, config.episode)
+    elif algorithm_name == "ppo":
+        return PPOAlgorithm(policy, learning_rate, config.episode, config.ppo)
     else:
         raise ValueError(
-            f"Unknown algorithm: {algorithm_name}. Supported: 'reinforce'"
+            f"Unknown algorithm: {algorithm_name}. Supported: 'reinforce', 'ppo'"
         )
 
 
@@ -222,11 +244,16 @@ def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None
     checkpoint_interval = max(1, config.episodes // 5)
 
     for episode in range(1, config.episodes + 1):
-        log_probs, rewards, stats = run_episode(env, policy, device)
-        loss = algorithm.compute_loss(log_probs, rewards)
+        episode_data = run_episode(env, policy, device)
+        loss = algorithm.compute_loss(
+            episode_data.log_probs,
+            episode_data.rewards,
+            states=episode_data.states,
+            actions=episode_data.actions,
+        )
         algorithm.update(loss)
 
-        history.record(stats)
+        history.record(episode_data.stats)
 
         loss_value = float(loss.detach().cpu())
         baseline = getattr(algorithm, "last_baseline", None)
@@ -236,11 +263,11 @@ def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None
             "episode",
             episode,
             "reward",
-            f"{stats.reward_total:.3f}",
+            f"{episode_data.stats.reward_total:.3f}",
             "distance",
-            f"{stats.distance_total:.3f}",
+            f"{episode_data.stats.distance_total:.3f}",
             "instability",
-            f"{stats.instability_total:.3f}",
+            f"{episode_data.stats.instability_total:.3f}",
             "loss",
             f"{loss_value:.4f}",
             "baseline",

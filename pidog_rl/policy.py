@@ -41,3 +41,10 @@ class PolicyNetwork(nn.Module):
         action = dist.rsample()
         log_prob = dist.log_prob(action).sum(dim=-1)
         return PolicyOutput(action=action, log_prob=log_prob)
+
+    def log_prob(self, state: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+        """Compute log probability of given action under current policy."""
+        mean, log_std = self(state)
+        std = torch.exp(log_std)
+        dist = Normal(mean, std)
+        return dist.log_prob(action).sum(dim=-1)
