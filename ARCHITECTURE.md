@@ -358,6 +358,7 @@ Load checkpoint
 - **Choice:** `distance × 1.0 − instability × 0.35`
 - **Rationale:** Weighted scalar reward balances speed vs. stability; weight tunable without retraining.
 - **Trade-off:** Instability clipping (250) prevents outlier IMU spikes from dominating the loss.
+- **Hook:** Optional reward shaping (normalize/scale/shift/clip) via `RewardShapingConfig` with no-op defaults.
 
 ### 3. **Action Space**
 - **Choice:** Continuous 4D deltas, scaled and clipped
@@ -419,6 +420,7 @@ Modify `_compute_reward()` in env.py or `RewardWeights` in config.py:
 ```python
 reward = distance − 0.5 * instability + bonus_for_pattern
 ```
+For simple shaping without changing reward formula, use `RewardShapingConfig` to normalize, scale, shift, or clip.
 
 ### 2. **Different Gait Parameters**
 Add fields to `GaitParameters` and `SafetyLimits`; update `state_dim` and `action_dim`.

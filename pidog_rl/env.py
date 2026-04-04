@@ -5,7 +5,14 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from .config import ActionScaling, HardwareConfig, ImuConfig, RewardWeights, SafetyLimits
+from .config import (
+    ActionScaling,
+    HardwareConfig,
+    ImuConfig,
+    RewardShapingConfig,
+    RewardWeights,
+    SafetyLimits,
+)
 from .pidog_hw import PidogHardware
 from .utils import exp_smooth
 
@@ -48,6 +55,7 @@ class PiDogGaitEnv:
         self,
         action_scaling: ActionScaling,
         reward_weights: RewardWeights,
+        reward_shaping: RewardShapingConfig,
         imu_config: ImuConfig,
         hardware: HardwareConfig,
         safety: SafetyLimits,
@@ -55,6 +63,7 @@ class PiDogGaitEnv:
     ) -> None:
         self.action_scaling = action_scaling
         self.reward_weights = reward_weights
+        self.reward_shaping = reward_shaping
         self.imu_config = imu_config
         self.hardware_config = hardware
         self.safety = safety
@@ -62,6 +71,8 @@ class PiDogGaitEnv:
         self.hardware = PidogHardware(hardware) if hardware.use_hardware else None
 
         self.step_count = 0
+        self._reward_mean: float | None = None
+        self._reward_mean_sq: float | None = None
         self.gait = GaitParameters(
             stride_length=0.08,
             step_height=0.03,
@@ -80,6 +91,8 @@ class PiDogGaitEnv:
 
     def reset(self) -> np.ndarray:
         self.step_count = 0
+        self._reward_mean = None
+        self._reward_mean_sq = None
         self.gait = GaitParameters(
             stride_length=0.08,
             step_height=0.03,
@@ -101,7 +114,9 @@ class PiDogGaitEnv:
 
         distance = self._sanitize_distance(distance_raw)
         instability_raw = self._instability(self._imu_smoothed)
-        reward = self._compute_reward(distance, instability_raw)
+        reward = self._apply_reward_shaping(
+            self._compute_reward(distance, instability_raw)
+        )
         self.step_count += 1
         done = self.step_count >= self.max_steps
 
@@ -202,6 +217,31 @@ class PiDogGaitEnv:
             self.reward_weights.forward * distance
             - self.reward_weights.instability * instability
         )
+
+    def _apply_reward_shaping(self, reward: float) -> float:
+        shaped = reward
+        if self.reward_shaping.normalize:
+            shaped = self._normalize_reward(shaped)
+        shaped = (shaped * self.reward_shaping.scale) + self.reward_shaping.shift
+        if self.reward_shaping.clip_min is not None:
+            shaped = max(self.reward_shaping.clip_min, shaped)
+        if self.reward_shaping.clip_max is not None:
+            shaped = min(self.reward_shaping.clip_max, shaped)
+        return float(shaped)
+
+    def _normalize_reward(self, reward: float) -> float:
+        if self._reward_mean is None or self._reward_mean_sq is None:
+            self._reward_mean = reward
+            self._reward_mean_sq = reward * reward
+        else:
+            alpha = self.reward_shaping.normalization_alpha
+            self._reward_mean = (1.0 - alpha) * self._reward_mean + alpha * reward
+            self._reward_mean_sq = (1.0 - alpha) * self._reward_mean_sq + alpha * (
+                reward * reward
+            )
+        variance = max(self._reward_mean_sq - (self._reward_mean ** 2), 0.0)
+        denom = np.sqrt(variance + self.reward_shaping.normalization_eps)
+        return float((reward - self._reward_mean) / denom)
 
     def _sanitize_distance(self, distance: float) -> float:
         if not np.isfinite(distance) or np.isclose(

@@ -55,7 +55,7 @@ python3 -m pip install ./pidog --break-system-packages
 
 ## Run training (simulation)
 
-The recommended entry point is module execution so that relative imports resolve correctly:
+The recommended entry point is module execution so that relative imports resolve correctly. Ensure your venv is active and `hardware.use_hardware` remains `False` (default) to keep runs in the simulator.
 
 ```powershell
 python -m pidog_rl.train
@@ -77,6 +77,39 @@ Additional checks for EMA baseline and gradient clipping (run after those featur
 python scripts\phase1_validation.py --check-ema-baseline
 python scripts\phase1_validation.py --check-grad-clip
 ```
+
+## Phase 2 validation (Reward shaping & stability)
+
+Use these tools to validate that reward signal quality is maintained and training is stable:
+
+```powershell
+python scripts\phase2_validation.py --seed 42
+```
+
+After a training run, analyze checkpoint quality:
+
+```powershell
+python scripts\phase2_analysis.py --checkpoint output\26_04_04_1\checkpoint_final.pt
+```
+
+For detailed instability margin analysis (detects if clipping threshold is too tight):
+
+```powershell
+python scripts\phase2_analysis.py --checkpoint output\26_04_04_1\checkpoint_final.pt --plot-instability-margin
+```
+
+### Phase 2 Signal Interpretation
+
+The analysis script produces:
+
+* `phase2_reward_stability.png`: Scatter plot showing reward-instability trade-off (should show negative correlation)
+* `phase2_convergence.png`: Reward, distance, and instability trends over training (should show learning progression)
+* `phase2_instability_margin.png`: Distribution of instability values relative to clipping threshold (should not exceed 5% clipped)
+
+Key metrics to watch:
+- **Correlation**: Should be < -0.3 (instability penalty is working)
+- **Clipped episodes**: Should be < 5% (margin is adequate)
+- **Variance trend**: Should decrease over time (exploitation > exploration)
 
 ### Algorithm Selection
 

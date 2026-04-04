@@ -28,6 +28,7 @@ def run_inference(
     env = PiDogGaitEnv(
         action_scaling=config.action_scaling,
         reward_weights=config.reward_weights,
+        reward_shaping=config.reward_shaping,
         imu_config=config.imu,
         hardware=hardware,
         safety=config.safety,

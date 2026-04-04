@@ -24,6 +24,19 @@ class RewardWeights:
 
 
 @dataclass(frozen=True)
+class RewardShapingConfig:
+    """Optional reward shaping and normalization hooks."""
+
+    normalize: bool = False
+    normalization_alpha: float = 0.05
+    normalization_eps: float = 1e-8
+    scale: float = 1.0
+    shift: float = 0.0
+    clip_min: float | None = None
+    clip_max: float | None = None
+
+
+@dataclass(frozen=True)
 class EpisodeConfig:
     """Episode length and discount for return estimation."""
 
@@ -97,6 +110,7 @@ class TrainingConfig:
     algorithm: str = "reinforce"
     action_scaling: ActionScaling = ActionScaling()
     reward_weights: RewardWeights = RewardWeights()
+    reward_shaping: RewardShapingConfig = RewardShapingConfig()
     episode: EpisodeConfig = EpisodeConfig()
     imu: ImuConfig = ImuConfig()
     hardware: HardwareConfig = HardwareConfig()

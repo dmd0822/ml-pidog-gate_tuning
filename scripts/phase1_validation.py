@@ -13,6 +13,7 @@ from pidog_rl.config import (
     EpisodeConfig,
     HardwareConfig,
     ImuConfig,
+    RewardShapingConfig,
     RewardWeights,
     SafetyLimits,
 )
@@ -50,6 +51,7 @@ def _validate_action_scaling() -> None:
     env = PiDogGaitEnv(
         action_scaling=scaling,
         reward_weights=RewardWeights(),
+        reward_shaping=RewardShapingConfig(),
         imu_config=ImuConfig(),
         hardware=HardwareConfig(use_hardware=False),
         safety=safety,

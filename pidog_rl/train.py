@@ -208,6 +208,7 @@ def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None
     env = PiDogGaitEnv(
         action_scaling=config.action_scaling,
         reward_weights=config.reward_weights,
+        reward_shaping=config.reward_shaping,
         imu_config=config.imu,
         hardware=config.hardware,
         safety=config.safety,
