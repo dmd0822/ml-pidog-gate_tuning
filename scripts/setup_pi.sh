@@ -33,7 +33,7 @@ clone_if_missing "https://github.com/sunfounder/pidog.git" "${HOME_DIR}/pidog" "
 (cd "${HOME_DIR}/pidog" && sudo rm -rf pidog.egg-info build dist)
 python3 -m pip install "${HOME_DIR}/pidog" --no-build-isolation --no-deps --break-system-packages
 
-python3 -m pip install -U pip
+python3 -m pip install -U pip --break-system-packages
 python3 -m pip install "${REPO_DIR}" --break-system-packages
 
 echo "Pi setup complete. Project installed from ${REPO_DIR}."
