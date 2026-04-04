@@ -10,7 +10,8 @@ clone_if_missing() {
   local clone_args="${3:-}"
 
   if [ -d "${target_dir}/.git" ]; then
-    echo "Using existing ${target_dir}"
+    echo "Updating existing ${target_dir}"
+    (cd "${target_dir}" && git pull --ff-only)
     return 0
   fi
 
