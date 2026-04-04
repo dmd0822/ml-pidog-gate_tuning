@@ -125,4 +125,7 @@ class PidogHardware:
             raise ValueError(
                 f"PiDog method '{name}' not found. Available methods: {available}"
             )
-        return getattr(self.robot, name)
+        attr = getattr(self.robot, name)
+        if callable(attr):
+            return attr
+        return lambda: getattr(self.robot, name)
