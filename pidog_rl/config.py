@@ -65,6 +65,9 @@ class HardwareConfig:
     stand_method: str = "do_action"
     stand_action: str | None = "stand"
     stand_speed: int = 65
+    lie_method: str = "do_action"
+    lie_action: str | None = "lie"
+    lie_speed: int = 60
     run_method: str = "wait_all_done"
     imu_method: str = "accData"
     distance_method: str = "read_distance"

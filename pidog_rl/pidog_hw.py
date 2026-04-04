@@ -20,6 +20,7 @@ class PidogHardware:
         self.robot = self._create_robot()
         self._apply_gait = self._get_method(config.apply_gait_method)
         self._stand = self._get_method(config.stand_method)
+        self._lie_down = self._get_method(config.lie_method)
         self._run = self._get_method(config.run_method)
         self._read_imu = self._get_method(config.imu_method)
         self._read_distance = self._get_method(config.distance_method)
@@ -30,6 +31,13 @@ class PidogHardware:
             self._stand()
             return
         self._stand(self.config.stand_action, speed=self.config.stand_speed)
+
+    def ensure_lie_down(self) -> None:
+        """Move the robot into a resting/lying pose after control ends."""
+        if self.config.lie_action is None:
+            self._lie_down()
+            return
+        self._lie_down(self.config.lie_action, speed=self.config.lie_speed)
 
     def run_and_measure(self, gait: GaitLike) -> tuple[float, np.ndarray]:
         # Action application: forward gait parameters to the PiDog API.

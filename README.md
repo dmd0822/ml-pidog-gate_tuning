@@ -73,7 +73,7 @@ python -m pidog_rl.infer --checkpoint output\26_04_04_1\checkpoint_final.pt --st
 To run on real hardware, make sure `pidog` is installed and pass `--use-hardware`:
 
 ```powershell
-python -m pidog_rl.infer --checkpoint output\26_04_04_1\checkpoint_final.pt --steps 50 --use-hardware
+python -m pidog_rl.infer --checkpoint "output/26_04_04_2/checkpoint_final.pt" --steps 10 --use-hardware
 ```
 
 ## Raspberry Pi setup
@@ -139,6 +139,8 @@ Hardware mode is controlled by `TrainingConfig.hardware.use_hardware` in [pidog_
 * `cycle_time` → `run_duration_sec`
 * `step_height` → `set_pose(z=...)` body height
 * `lateral_offset` → `set_pose(y=...)` lateral offset
+
+After inference completes in hardware mode, the script issues a `lie` action (configurable via `HardwareConfig.lie_*`) so the dog rests.
 
 You can tune the mapping ranges via `HardwareConfig` (speed/body height/offset ranges). If you want a different PiDog API call, override `apply_gait_method`/`apply_gait_action`.
 

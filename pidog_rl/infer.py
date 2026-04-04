@@ -62,6 +62,9 @@ def run_inference(
             f"{info['instability']:.3f}",
         )
 
+    if env.hardware is not None:
+        env.hardware.ensure_lie_down()
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run a trained PiDog gait policy.")
