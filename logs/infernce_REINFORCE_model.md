@@ -1,5 +1,6 @@
 model: 26_04_04_1
 source: user-provided inference output
+command: python -m pidog_rl.infer --checkpoint "output/26_04_04_1/checkpoint_final.pt" --steps 10 --use-hardware
 
 step 1 reward -2443.740 distance -2.000 instability 6976.400
 step 2 reward -3885.544 distance -2.000 instability 11095.841
@@ -14,6 +15,7 @@ step 10 reward -6189.465 distance 176.980 instability 18189.842
 
 model: 26_04_04_2
 source: user-provided inference output
+command: python -m pidog_rl.infer --checkpoint "output/26_04_04_2/checkpoint_final.pt" --steps 10 --use-hardware
 
 step 1 reward -87.500 distance 0.000 instability 250.000
 step 2 reward -87.500 distance 0.000 instability 250.000
