@@ -1,29 +1,47 @@
-model: 26_04_04_1
-source: user-provided inference output
-command: python -m pidog_rl.infer --checkpoint "output/26_04_04_1/checkpoint_final.pt" --steps 10 --use-hardware
+# Inference Results — REINFORCE Models
 
-step 1 reward -2443.740 distance -2.000 instability 6976.400
-step 2 reward -3885.544 distance -2.000 instability 11095.841
-step 3 reward -4440.252 distance -2.000 instability 12680.721
-step 4 reward -5140.572 distance -2.000 instability 14681.634
-step 5 reward -5457.207 distance 112.560 instability 15913.621
-step 6 reward -6062.801 distance -2.000 instability 17316.574
-step 7 reward -5888.470 distance 91.890 instability 17086.744
-step 8 reward -6266.456 distance -2.000 instability 17898.445
-step 9 reward -6338.774 distance -2.000 instability 18105.068
-step 10 reward -6189.465 distance 176.980 instability 18189.842
+## Model: 26_04_04_1
 
-model: 26_04_04_2
-source: user-provided inference output
-command: python -m pidog_rl.infer --checkpoint "output/26_04_04_2/checkpoint_final.pt" --steps 10 --use-hardware
+**Source:** User-provided inference output
 
-step 1 reward -87.500 distance 0.000 instability 250.000
-step 2 reward -87.500 distance 0.000 instability 250.000
-step 3 reward 3.150 distance 90.650 instability 250.000
-step 4 reward -5.670 distance 81.830 instability 250.000
-step 5 reward -87.500 distance 0.000 instability 250.000
-step 6 reward -87.500 distance 0.000 instability 250.000
-step 7 reward -87.500 distance 0.000 instability 250.000
-step 8 reward -87.500 distance 0.000 instability 250.000
-step 9 reward 111.540 distance 199.040 instability 250.000
-step 10 reward 99.830 distance 187.330 instability 250.000
+**Command:**
+```bash
+python -m pidog_rl.infer --checkpoint "output/26_04_04_1/checkpoint_final.pt" --steps 10 --use-hardware
+```
+
+| Step | Reward | Distance | Instability |
+|------|--------|----------|-------------|
+| 1 | -2443.740 | -2.000 | 6976.400 |
+| 2 | -3885.544 | -2.000 | 11095.841 |
+| 3 | -4440.252 | -2.000 | 12680.721 |
+| 4 | -5140.572 | -2.000 | 14681.634 |
+| 5 | -5457.207 | 112.560 | 15913.621 |
+| 6 | -6062.801 | -2.000 | 17316.574 |
+| 7 | -5888.470 | 91.890 | 17086.744 |
+| 8 | -6266.456 | -2.000 | 17898.445 |
+| 9 | -6338.774 | -2.000 | 18105.068 |
+| 10 | -6189.465 | 176.980 | 18189.842 |
+
+---
+
+## Model: 26_04_04_2
+
+**Source:** User-provided inference output
+
+**Command:**
+```bash
+python -m pidog_rl.infer --checkpoint "output/26_04_04_2/checkpoint_final.pt" --steps 10 --use-hardware
+```
+
+| Step | Reward | Distance | Instability |
+|------|--------|----------|-------------|
+| 1 | -87.500 | 0.000 | 250.000 |
+| 2 | -87.500 | 0.000 | 250.000 |
+| 3 | 3.150 | 90.650 | 250.000 |
+| 4 | -5.670 | 81.830 | 250.000 |
+| 5 | -87.500 | 0.000 | 250.000 |
+| 6 | -87.500 | 0.000 | 250.000 |
+| 7 | -87.500 | 0.000 | 250.000 |
+| 8 | -87.500 | 0.000 | 250.000 |
+| 9 | 111.540 | 199.040 | 250.000 |
+| 10 | 99.830 | 187.330 | 250.000 |
