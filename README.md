@@ -78,9 +78,17 @@ python -m pidog_rl.infer --checkpoint output\26_04_04_1\checkpoint_final.pt --st
 
 ## Raspberry Pi setup
 
-On Raspberry Pi, follow the full SunFounder dependency setup, then install this project. Avoid running `pip` as root when possible; use a virtual environment for this repo:
+On Raspberry Pi, you can run the setup script (recommended):
 
 ```bash
+chmod +x scripts/setup_pi.sh
+./scripts/setup_pi.sh
+```
+
+Or run the steps manually:
+
+```bash
+sudo apt update
 sudo apt install -y git python3-pip python3-setuptools python3-smbus
 
 cd ~/
@@ -102,10 +110,8 @@ python3 -m pip install . --no-build-isolation --no-deps --break-system-packages
 cd ~/
 git clone https://github.com/dmd0822/ml-pidog-gate_tuning.git
 cd ml-pidog-gate_tuning
-python3 -m venv .venv
-source .venv/bin/activate
 python3 -m pip install -U pip
-python3 -m pip install .
+python3 -m pip install . --break-system-packages
 ```
 
 Hardware mode requires the `pidog` package and access to the PiDog hardware.
