@@ -133,7 +133,14 @@ Inside each run folder:
 
 ## Hardware mode
 
-Hardware mode is controlled by `TrainingConfig.hardware.use_hardware` in [pidog_rl/config.py](pidog_rl/config.py). When enabled, the environment uses [pidog_rl/pidog_hw.py](pidog_rl/pidog_hw.py) to call into the `pidog` library.
+Hardware mode is controlled by `TrainingConfig.hardware.use_hardware` in [pidog_rl/config.py](pidog_rl/config.py). When enabled, the environment uses [pidog_rl/pidog_hw.py](pidog_rl/pidog_hw.py) to call into the `pidog` library. The default mapping is:
+
+* `stride_length` → `do_action("forward")` speed
+* `cycle_time` → `run_duration_sec`
+* `step_height` → `set_pose(z=...)` body height
+* `lateral_offset` → `set_pose(y=...)` lateral offset
+
+You can tune the mapping ranges via `HardwareConfig` (speed/body height/offset ranges). If you want a different PiDog API call, override `apply_gait_method`/`apply_gait_action`.
 
 > [!WARNING]
 > Enabling hardware mode can move the robot repeatedly during training. Keep the run duration short, ensure the robot is in a safe area, and have a quick way to cut power.

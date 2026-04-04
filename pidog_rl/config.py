@@ -42,7 +42,24 @@ class HardwareConfig:
 
     use_hardware: bool = False
     run_duration_sec: float = 0.5
-    apply_gait_method: str = "set_gait"
+    apply_gait_method: str = "do_action"
+    apply_gait_action: str | None = "forward"
+    apply_gait_speed: int = 90
+    stride_length_min: float = 0.04
+    stride_length_max: float = 0.12
+    cycle_time_min: float = 0.18
+    cycle_time_max: float = 0.42
+    step_height_min: float = 0.015
+    step_height_max: float = 0.05
+    lateral_offset_min: float = -0.03
+    lateral_offset_max: float = 0.03
+    speed_min: int = 60
+    speed_max: int = 100
+    run_duration_min: float = 0.2
+    run_duration_max: float = 0.6
+    body_height_min: float = 70.0
+    body_height_max: float = 95.0
+    lateral_offset_max_mm: float = 20.0
     stand_method: str = "do_action"
     stand_action: str | None = "stand"
     stand_speed: int = 65

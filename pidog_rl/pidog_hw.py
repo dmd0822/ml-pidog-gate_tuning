@@ -34,7 +34,48 @@ class PidogHardware:
     def run_and_measure(self, gait: GaitLike) -> tuple[float, np.ndarray]:
         # Action application: forward gait parameters to the PiDog API.
         try:
-            self._apply_gait(**gait.as_dict())
+            gait_values = gait.as_dict()
+            if self.config.apply_gait_action is None:
+                self._apply_gait(**gait_values)
+                run_duration = self.config.run_duration_sec
+            else:
+                speed = int(
+                    round(
+                        self._map_range(
+                            gait_values["stride_length"],
+                            self.config.stride_length_min,
+                            self.config.stride_length_max,
+                            self.config.speed_min,
+                            self.config.speed_max,
+                        )
+                    )
+                )
+                run_duration = self._map_range(
+                    gait_values["cycle_time"],
+                    self.config.cycle_time_min,
+                    self.config.cycle_time_max,
+                    self.config.run_duration_min,
+                    self.config.run_duration_max,
+                )
+                body_height = self._map_range(
+                    gait_values["step_height"],
+                    self.config.step_height_min,
+                    self.config.step_height_max,
+                    self.config.body_height_min,
+                    self.config.body_height_max,
+                )
+                lateral_y = self._map_range(
+                    gait_values["lateral_offset"],
+                    self.config.lateral_offset_min,
+                    self.config.lateral_offset_max,
+                    -self.config.lateral_offset_max_mm,
+                    self.config.lateral_offset_max_mm,
+                )
+                self.robot.set_pose(y=lateral_y, z=body_height)
+                self._apply_gait(
+                    self.config.apply_gait_action,
+                    speed=speed,
+                )
         except TypeError as exc:  # method signature mismatch
             raise TypeError(
                 "PiDog gait method signature mismatch. "
@@ -42,7 +83,7 @@ class PidogHardware:
             ) from exc
 
         # Run for a short duration to collect a transition.
-        self._run(self.config.run_duration_sec)
+        self._run(run_duration)
 
         distance = float(self._read_distance())
         imu_raw = self._read_imu()
@@ -56,6 +97,16 @@ class PidogHardware:
         if imu.shape[0] < 3:
             raise ValueError("IMU reading must provide at least 3 channels.")
         return distance, imu[:3]
+
+    @staticmethod
+    def _map_range(
+        value: float, in_min: float, in_max: float, out_min: float, out_max: float
+    ) -> float:
+        if in_max == in_min:
+            return out_min
+        clamped = min(max(value, in_min), in_max)
+        scale = (clamped - in_min) / (in_max - in_min)
+        return out_min + scale * (out_max - out_min)
 
     @staticmethod
     def _create_robot() -> Any:
