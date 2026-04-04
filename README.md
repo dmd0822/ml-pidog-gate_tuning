@@ -45,17 +45,11 @@ If you want to install the project (for example on a Raspberry Pi), use pip from
 python3 -m pip install .
 ```
 
-For hardware support (the `pidog` library), you must install `pidog` from SunFounder first (it is not on PyPI), then install the extra:
+For hardware support (the `pidog` library), you must install `pidog` from SunFounder first (it is not on PyPI):
 
 ```bash
 git clone --depth=1 https://github.com/sunfounder/pidog.git
 python3 -m pip install ./pidog --break-system-packages
-```
-
-Then install the extra:
-
-```bash
-python3 -m pip install ".[hardware]"
 ```
 
 ## Run training (simulation)
@@ -76,7 +70,7 @@ Use the inference script to apply a trained policy to the environment:
 python -m pidog_rl.infer --checkpoint output\26_04_04_1\checkpoint_final.pt --steps 50
 ```
 
-To run on real hardware, install the `pidog` extra and pass `--use-hardware`:
+To run on real hardware, make sure `pidog` is installed and pass `--use-hardware`:
 
 ```powershell
 python -m pidog_rl.infer --checkpoint output\26_04_04_1\checkpoint_final.pt --steps 50 --use-hardware
@@ -84,9 +78,27 @@ python -m pidog_rl.infer --checkpoint output\26_04_04_1\checkpoint_final.pt --st
 
 ## Raspberry Pi setup
 
-On Raspberry Pi, avoid running `pip` as root when possible. Prefer a virtual environment:
+On Raspberry Pi, follow the full SunFounder dependency setup, then install this project. Avoid running `pip` as root when possible; use a virtual environment for this repo:
 
 ```bash
+sudo apt install -y git python3-pip python3-setuptools python3-smbus
+
+cd ~/
+git clone -b 2.5.x --depth=1 https://github.com/sunfounder/robot-hat.git
+cd robot-hat
+sudo python3 install.py
+
+cd ~/
+git clone --depth=1 https://github.com/sunfounder/vilib.git
+cd vilib
+sudo python3 install.py
+
+cd ~/
+git clone --depth=1 https://github.com/sunfounder/pidog.git
+cd pidog
+sudo rm -rf pidog.egg-info build dist
+python3 -m pip install . --no-build-isolation --no-deps --break-system-packages
+
 cd ~/
 git clone https://github.com/dmd0822/ml-pidog-gate_tuning.git
 cd ml-pidog-gate_tuning
@@ -96,18 +108,7 @@ python3 -m pip install -U pip
 python3 -m pip install .
 ```
 
-Hardware mode requires the `pidog` package and access to the PiDog hardware. Install it from SunFounder first:
-
-```bash
-git clone --depth=1 https://github.com/sunfounder/pidog.git
-python3 -m pip install ./pidog --break-system-packages
-```
-
-Then enable the optional extra:
-
-```bash
-python3 -m pip install ".[hardware]"
-```
+Hardware mode requires the `pidog` package and access to the PiDog hardware.
 
 > [!NOTE]
 > PyTorch wheels vary by platform. If `pip install .` fails on Raspberry Pi due to torch, install a compatible CPU wheel for your Pi first, then rerun the install.
