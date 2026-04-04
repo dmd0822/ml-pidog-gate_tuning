@@ -9,6 +9,15 @@
 
 <!-- Append new learnings below. Each entry is something lasting about the project. -->
 
+### 2026-04-04: Housekeeping
+
+**Context:** Removed stale output folder from training run.
+
+**Action:** Deleted `output/26_04_04_3/` directory and all contents to clean up intermediate artifacts.
+
+**Key Files:**
+- N/A (cleanup only)
+
 ### 2026-04-04: Refactored for Algorithm Extensibility
 
 **Context:** REINFORCE was tightly coupled into train.py. Restructured to support multiple RL algorithms.
