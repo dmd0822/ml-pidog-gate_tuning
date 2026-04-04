@@ -1,6 +1,6 @@
 # Team Decisions
 
-<!-- Merged from decisions/inbox/ on 2026-04-04T17:46:06Z -->
+<!-- Merged from decisions/inbox/ on 2026-04-04T18:31:37Z -->
 
 ## Active Decisions
 
@@ -12,6 +12,16 @@
 ### 2026-04-04T16:48:47Z: User directive
 **By:** Dave Davis (via Copilot)  
 **What:** When making model changes, document the changes being made and the reason for the changes.  
+**Why:** User request — captured for team memory
+
+### 2026-04-04T18:04:00Z: User directive
+**By:** Dave Davis (via Copilot)  
+**What:** Training should use the simulator and run in a venv.  
+**Why:** User request — captured for team memory
+
+### 2026-04-04T18:29:36Z: User directive
+**By:** Dave Davis (via Copilot)  
+**What:** Maintain a separate model change log, distinct from the README.  
 **Why:** User request — captured for team memory
 
 ### 2026-04-04: Refactored RL Algorithm Architecture for Extensibility
@@ -89,6 +99,33 @@
 **Implementation Order:** Phase 1 (Week 1) → Phase 2 (Week 2) → Phase 3 (Week 3) → Phase 4 (Week 4).
 
 **Decision Gates:** Post-Phase 1, Phase 2, Phase 3 measurements to validate approach or pivot.
+
+### 2026-04-04: D5 Phase 2 Analysis Results — No Convergence Improvement
+**By:** Minnie  
+**Status:** Needs Team Input  
+**Decision:** Phase 2 reward formulation (adaptive instability penalty + IMU normalization + distance shaping) did not achieve convergence targets.
+
+**Analysis Scope:** Compared 4 training runs (2000 episodes each): ORI (Phase 1 baseline) vs 26_04_04_1, 26_04_04_2, 26_04_04_3 (Phase 2 runs).
+
+**Results:**
+- **Reward Mean:** -4.83 (Phase 2) vs -4.78 (ORI) = −1.0% regression ❌
+- **Instability Mean:** 31.10 vs 31.18 = −0.2% improvement (negligible) ❌
+- **Correlation (Reward vs Instability):** -0.337 (Runs 1-2, excellent) but -0.262 (Run 3, weak) ⚠️
+- **Reproducibility:** Runs 1-2 identical; all within <2% variance ✓
+- **Distance:** 6.05 vs 6.13 (−1.3%, no regression) ✓
+
+**2 of 4 success criteria met.** Primary objectives (convergence +20%, instability −20%) failed.
+
+**Root Cause Hypothesis:** Local optimum reached. Current reward formulation insufficient to drive agent beyond Phase 1 baseline gait. Run 3 signal degradation suggests config sensitivity.
+
+**Questions for Team:**
+- **Mickey:** Should we increase instability penalty weights by 2-3x, or does this indicate training needs algorithmic reset?
+- **Donald:** Can you verify Run 3 config? Correlation drop (-0.262 vs -0.337) unusual.
+- **Goofy:** Does phase2_validation.py detect determinism issues in Run 3?
+
+**Recommendation:** Do not gate WI-2 on Phase 2 convergence. Proceed to baseline enhancement (WI-2) in parallel; increase penalty weights as separate tuning experiment. Compare Phase 1 baseline vs Phase 2 with stronger penalty + baseline enhancement side-by-side.
+
+**Data Files:** All analysis plots saved to `output/{ORI,26_04_04_1,26_04_04_2,26_04_04_3}/phase2_*.png`
 
 ## Archive
 

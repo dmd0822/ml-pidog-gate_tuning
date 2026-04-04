@@ -85,3 +85,20 @@
 - Ready for WI-1 (Reward Normalization) + WI-4 (Convergence Benchmark) execution
 
 **Next:** Execute WI-1 + WI-4 in parallel; validate against Phase 1 baseline; gate WI-2 + WI-3 based on results.
+
+### 2026-04-04: Phase 2 Analysis Results — Config Verification Needed
+
+**Context:** Minnie completed Phase 2 analysis. Results show reward shaping implementation working as designed, but reward formulation insufficient to improve convergence.
+
+**Findings:**
+- Phase 2 runs -4.83 mean reward vs ORI -4.78 (−1% regression)
+- Instability unchanged: 31.10 vs 31.18 (−0.2%)
+- Run 3 shows signal degradation: correlation -0.262 vs R1-2 -0.337 (unusual)
+- Reproducibility excellent; distance metric held
+
+**Action Items for Donald:**
+1. Verify Run 3 config matches Runs 1-2 (reason: correlation drop suggests hyperparameter sensitivity)
+2. Review RewardShapingConfig penalty weights; may need 2-3x increase for next iteration
+3. Consider parallel tuning experiment: stronger penalty weights vs. baseline enhancement (WI-2)
+
+**Team Decision:** D5 merged to decisions.md; recommend proceeding to WI-2 regardless, investigate penalty weight tuning separately.

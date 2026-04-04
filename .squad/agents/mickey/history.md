@@ -7,6 +7,7 @@
 
 ## Recent Updates
 
+📌 2026-04-04: Phase 2 Analysis Complete — Reward Formulation Insufficient (Minnie results in)
 📌 2026-04-04: Formatted inference results documentation (logs/infernce_REINFORCE_model.md)
 
 ## Learnings
@@ -81,3 +82,30 @@
 - All decisions merged and archived
 
 **Next:** Execute WI-1 + WI-4 in parallel; measure impact vs. Phase 1; gate remaining work items based on results.
+
+### 2026-04-04: README Cleanup — Phase Nomenclature Removed
+
+**Context:** User requested removal of phase labels from README to focus on usage and capabilities rather than internal development phases.
+
+**Changed:**
+- Replaced "## Phase 1 validation (REINFORCE stability)" with "## Validation"
+- Replaced "## Phase 2 validation (Reward shaping & stability)" section into cohesive validation documentation
+- Renamed "### Phase 2 Signal Interpretation" to "### Analysis Signal Interpretation"
+- Preserved all validation scripts and tools; only removed phase naming
+
+**Rationale:** README is user-facing documentation. Phase labels are internal team artifacts. Users should see what tools are available and when to use them, not the development roadmap.
+
+### 2026-04-04: Phase 2 Analysis Complete — Team Review Needed
+
+**Context:** Minnie analysis shows Phase 2 reward formulation (adaptive penalty + IMU norm + distance shaping) reached local optimum without convergence improvement.
+
+**Key Finding:** Phase 2 runs regressed -1% on reward, with negligible instability improvement. Run 3 shows signal degradation (correlation -0.262 vs target -0.3). Reproducibility excellent (Runs 1-2 identical); distance metric held.
+
+**Team Questions:**
+- Should penalty weights be increased 2-3x for next WI-1 revision?
+- Does signal degradation in Run 3 indicate config sensitivity or require deeper investigation?
+- Proceed to WI-2 (baseline enhancement) despite convergence targets unmet?
+
+**Recommendation:** Proceed to WI-2 in parallel; increase penalty weights as separate tuning experiment; do not gate on convergence. Investigate Run 3 config separately; baseline enhancement may be prerequisite for penalty effectiveness.
+
+**Decision Entry:** D5 merged to decisions.md; awaiting team input.
