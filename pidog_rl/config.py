@@ -29,6 +29,8 @@ class EpisodeConfig:
 
     max_steps: int = 50
     gamma: float = 0.98
+    baseline_ema_alpha: float = 0.1
+    grad_clip_norm: float = 1.0
 
 
 @dataclass(frozen=True)

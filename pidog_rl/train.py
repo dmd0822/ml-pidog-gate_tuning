@@ -227,6 +227,10 @@ def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None
 
         history.record(stats)
 
+        loss_value = float(loss.detach().cpu())
+        baseline = getattr(algorithm, "last_baseline", None)
+        grad_norm = getattr(algorithm, "last_grad_norm", None)
+
         print(
             "episode",
             episode,
@@ -236,6 +240,12 @@ def train(config: TrainingConfig, output_dir: Path = DEFAULT_OUTPUT_DIR) -> None
             f"{stats.distance_total:.3f}",
             "instability",
             f"{stats.instability_total:.3f}",
+            "loss",
+            f"{loss_value:.4f}",
+            "baseline",
+            f"{baseline:.4f}" if baseline is not None else "n/a",
+            "grad_norm",
+            f"{grad_norm:.3f}" if grad_norm is not None else "n/a",
         )
 
         if episode % checkpoint_interval == 0:

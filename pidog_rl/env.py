@@ -123,6 +123,7 @@ class PiDogGaitEnv:
         action = np.asarray(action, dtype=np.float32).reshape(-1)
         if action.shape[0] != self.action_dim:
             raise ValueError(f"Expected action dim {self.action_dim}, got {action.shape[0]}")
+        action = np.clip(action, -1.0, 1.0)
 
         deltas = np.array(
             [

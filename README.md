@@ -63,6 +63,21 @@ python -m pidog_rl.train
 
 Training writes checkpoints and a plot into `output/`.
 
+## Phase 1 validation (REINFORCE stability)
+
+Use the validation script to confirm stability safeguards before approving a training change:
+
+```powershell
+python scripts\phase1_validation.py
+```
+
+Additional checks for EMA baseline and gradient clipping (run after those features land):
+
+```powershell
+python scripts\phase1_validation.py --check-ema-baseline
+python scripts\phase1_validation.py --check-grad-clip
+```
+
 ### Algorithm Selection
 
 The default algorithm is REINFORCE. To use a different algorithm, modify `TrainingConfig.algorithm` in [pidog_rl/config.py](pidog_rl/config.py):
