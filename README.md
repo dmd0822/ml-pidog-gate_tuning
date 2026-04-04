@@ -37,6 +37,20 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+## Install as a package
+
+If you want to install the project (for example on a Raspberry Pi), use pip from the repo root:
+
+```bash
+python3 -m pip install .
+```
+
+For hardware support (the `pidog` library), install the optional extra:
+
+```bash
+python3 -m pip install ".[hardware]"
+```
+
 ## Run training (simulation)
 
 The recommended entry point is module execution so that relative imports resolve correctly:
@@ -46,6 +60,26 @@ python -m pidog_rl.train
 ```
 
 Training writes checkpoints and a plot into `output/`.
+
+## Raspberry Pi setup
+
+On Raspberry Pi, avoid running `pip` as root when possible. Prefer a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -U pip
+python3 -m pip install .
+```
+
+Hardware mode requires the `pidog` package and access to the PiDog hardware. If `pidog` is installed from a local path or vendor package, install it first, then run:
+
+```bash
+python3 -m pip install ".[hardware]"
+```
+
+> [!NOTE]
+> PyTorch wheels vary by platform. If `pip install .` fails on Raspberry Pi due to torch, install a compatible CPU wheel for your Pi first, then rerun the install.
 
 ## Outputs
 
