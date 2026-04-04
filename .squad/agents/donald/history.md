@@ -44,3 +44,26 @@
 **Future Algorithms:** PPO, A2C, SAC can be added by implementing `Algorithm` and registering in the factory.
 
 **Backward Compatibility:** Old checkpoints with `optimizer_state_dict` won't load with new code; this is acceptable as the repo is early-stage.
+
+### 2026-04-04: Phase 1 Stability Adjustments
+
+**Context:** Approved Phase 1 stability improvements for REINFORCE training.
+
+**Action:** Added EMA return baseline and gradient clipping support in `ReinforceAlgorithm`, clamped raw actions in `PiDogGaitEnv`, and expanded training logs with loss/baseline/grad norm.
+
+**Key Files:**
+- `pidog_rl/algorithms/reinforce.py`: EMA baseline + grad clip tracking
+- `pidog_rl/config.py`: Episode config fields for baseline EMA + grad clip norm
+- `pidog_rl/env.py`: Action clamp before scaling
+- `pidog_rl/train.py`: Logged stability metrics
+
+### 2026-04-04: Phase 1 Complete — Team Orchestration
+
+**Context:** Phase 1 REINFORCE variance reduction work finalized across team.
+
+**Cross-Agent Coordination:**
+- **Goofy:** Validation script aligned with Donald's final implementation
+- **Mickey:** Architecture docs finalized; Phase 2-4 roadmap created
+- **Scribe:** Decisions merged; orchestration logs recorded
+
+**Status:** Phase 1 foundation complete. Ready for convergence testing and Phase 2 reward tuning.

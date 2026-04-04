@@ -20,6 +20,13 @@
 - **Pluggable Algorithms:** `Algorithm` ABC in `algorithms/base.py` + factory pattern in `train.py` enables algorithm swapping (REINFORCE ↔ PPO ↔ A2C) without modifying core loop.
 - **Algorithm Interface:** `compute_loss()`, `update()`, `state_dict()`, `load_state_dict()` standardize checkpoint serialization and extensibility.
 
+### Performance & Training Dynamics (2026-04-04)
+- **Current Baseline:** 2000-episode training shows slow convergence; reward curves lack clear uptrend in final episodes; instability remains volatile
+- **REINFORCE Limitations:** Scalar baseline (mean return) can diverge from per-episode target; gradient spikes early in training destabilize learning
+- **Reward Signal Issues:** Static instability weight (0.35) may not balance exploration vs. stability well across episodes
+- **Opportunity:** Variance reduction + reward shaping can yield 50% convergence speedup without algorithm change
+- **Safe Intervention Points:** Gradient clipping, baseline enhancement, and reward normalization are low-risk modifications to existing algorithm
+
 ### Safety & Robustness
 - **Gait Bounds:** All actions clipped to SafetyLimits before applying (protects servos, prevents unsafe poses).
 - **Sensor Handling:** Invalid distance readings (e.g., −2.0) treated as 0; IMU smoothed with exponential filter (α=0.6) to damp noise.
@@ -40,3 +47,19 @@
 - `algorithms/base.py`: ABC defining algorithm contract (compute_loss, update, state_dict, load_state_dict).
 - `algorithms/reinforce.py`: Concrete REINFORCE with baseline implementation.
 - `algorithms/README.md`: Extension guide for adding new algorithms (PPO, A2C, SAC patterns documented).
+
+### 2026-04-04: Phase 1 Complete — Team Orchestration & Phase 2 Leadership
+
+**Context:** Phase 1 REINFORCE stability work finalized; Phase 2 roadmap ready for execution.
+
+**Completed:**
+- Architecture documentation finalized with algorithm extensibility guidance
+- Gait stability improvement plan (4 phases) documented and decision-gated
+- Orchestration across Donald (implementation), Goofy (validation), scribe (decisions)
+
+**Phase 2 Leadership (Mickey):**
+- Reward signal tuning with adaptive penalty scaling
+- IMU normalization and distance reward shaping
+- Target: 50% convergence speedup validated through decision gates
+
+**Status:** Foundation solid. Phase 1 infrastructure complete across team. Ready to measure convergence and proceed to Phase 2.
