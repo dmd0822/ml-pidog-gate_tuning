@@ -66,6 +66,9 @@ Training writes checkpoints and a plot into `output/`.
 On Raspberry Pi, avoid running `pip` as root when possible. Prefer a virtual environment:
 
 ```bash
+cd ~/
+git clone https://github.com/dmd0822/ml-pidog-gate_tuning.git
+cd ml-pidog-gate_tuning
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install -U pip
