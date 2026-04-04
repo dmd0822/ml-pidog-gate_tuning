@@ -19,6 +19,8 @@ class RewardWeights:
 
     forward: float = 1.0
     instability: float = 0.35
+    instability_clip: float = 250.0
+    invalid_distance: float = -2.0
 
 
 @dataclass(frozen=True)

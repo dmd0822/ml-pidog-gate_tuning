@@ -96,16 +96,22 @@ class PiDogGaitEnv:
         self._apply_action(action)
 
         # Run the robot for a short duration and read sensors.
-        distance, imu = self._run_robot()
+        distance_raw, imu = self._run_robot()
         self._imu_smoothed = exp_smooth(self._imu_smoothed, imu, self.imu_config.smoothing)
 
-        reward = self._compute_reward(distance, self._imu_smoothed)
+        distance = self._sanitize_distance(distance_raw)
+        instability_raw = self._instability(self._imu_smoothed)
+        reward = self._compute_reward(distance, instability_raw)
         self.step_count += 1
         done = self.step_count >= self.max_steps
 
         info = {
             "distance": float(distance),
-            "instability": float(self._instability(self._imu_smoothed)),
+            "distance_raw": float(distance_raw),
+            "instability": float(
+                min(instability_raw, self.reward_weights.instability_clip)
+            ),
+            "instability_raw": float(instability_raw),
         }
         return self._get_state(), reward, done, info
 
@@ -185,13 +191,23 @@ class PiDogGaitEnv:
         )
         return float(distance), imu
 
-    def _compute_reward(self, distance: float, imu: np.ndarray) -> float:
-        instability = self._instability(imu)
+    def _compute_reward(self, distance: float, instability_raw: float) -> float:
+        instability = min(
+            instability_raw,
+            self.reward_weights.instability_clip,
+        )
         # Reward engineering: forward motion minus instability penalty.
         return (
             self.reward_weights.forward * distance
             - self.reward_weights.instability * instability
         )
+
+    def _sanitize_distance(self, distance: float) -> float:
+        if not np.isfinite(distance) or np.isclose(
+            distance, self.reward_weights.invalid_distance
+        ):
+            return 0.0
+        return float(distance)
 
     @staticmethod
     def _instability(imu: np.ndarray) -> float:

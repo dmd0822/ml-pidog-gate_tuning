@@ -151,6 +151,6 @@ Each environment step:
 
 * Updates gait parameters using scaled, clipped action deltas (bounded by safety limits)
 * Runs a short rollout and reads distance and IMU
-* Computes reward as forward distance minus an instability penalty (sum of absolute IMU channels)
+* Computes reward as forward distance minus an instability penalty (sum of absolute IMU channels, clipped to avoid outlier spikes). Invalid distance readings (for example `-2.0` from the hardware API) are treated as zero.
 
 You can tune trade-offs through `RewardWeights` in [pidog_rl/config.py](pidog_rl/config.py).
