@@ -61,6 +61,20 @@ python -m pidog_rl.train
 
 Training writes checkpoints and a plot into `output/`.
 
+## Run inference (trained policy)
+
+Use the inference script to apply a trained policy to the environment:
+
+```powershell
+python -m pidog_rl.infer --checkpoint output\26_04_04_1\checkpoint_final.pt --steps 50
+```
+
+To run on real hardware, install the `pidog` extra and pass `--use-hardware`:
+
+```powershell
+python -m pidog_rl.infer --checkpoint output\26_04_04_1\checkpoint_final.pt --steps 50 --use-hardware
+```
+
 ## Raspberry Pi setup
 
 On Raspberry Pi, avoid running `pip` as root when possible. Prefer a virtual environment:
